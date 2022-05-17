@@ -6,6 +6,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+// Learn here -> https://bukkit.fandom.com/wiki/Plugin_Tutorial_(Eclipse)
+
 public final class TimeMachine extends JavaPlugin implements Listener {
 
     @Override
