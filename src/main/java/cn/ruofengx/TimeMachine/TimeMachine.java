@@ -11,10 +11,11 @@ public final class TimeMachine extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
        getLogger().info("This is my first timemachine, it still do nothing yet.");
-       Bukkit.getPluginManager().registerEvents(this, this);
+       Bukkit.getPluginManager().registerEvents(this, this); //Register the events
     }
 
     @EventHandler
+    // This event is called when a player joins the server.
     public static void onPlayerJoin(PlayerJoinEvent event) {
         
        event.getPlayer().sendMessage("Welcome");
