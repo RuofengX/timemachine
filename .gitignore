@@ -1,6 +1,7 @@
 .idea
 .vscode
 TENCENT_KEY
+config.temp
 
 # Created by .ignore support plugin (hsz.mobi)
 ### Maven template
