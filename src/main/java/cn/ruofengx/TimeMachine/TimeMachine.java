@@ -25,7 +25,7 @@ public final class TimeMachine extends JavaPlugin implements Listener {
       //    }
       // }
 
-      startSaveUploader();
+      // startSaveUploader();
    }
 
    @Override
