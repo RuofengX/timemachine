@@ -1,9 +1,10 @@
 SaveUploader:
   isEnabled: true
   tencent-cos:
-    secret-id: "xxxxxx"
-    secret-key: "xxxxxx"
+    secret-id: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    secret-key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     region: "ap-nanjing"
     bucket: "meta-world-backup-1258860419"
-  world-folder: "/mnt/meta/worlds"
+  world-folder: "./world"
+  backup-prefix: ""
   interval-second: 3600

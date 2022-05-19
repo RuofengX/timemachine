@@ -1,7 +1,5 @@
 package cn.ruofengx.TimeMachine;
 
-import java.io.File;
-
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,16 +16,16 @@ public final class TimeMachine extends JavaPlugin implements Listener {
    @Override
    public void onEnable() {
       this.saveDefaultConfig();
-      if (getConfig().getBoolean("SaveUploader.isEnabled")) {
-         File pwd = new File(".");
-         getLogger().info("current work folder");
-         getLogger().info(pwd.getAbsolutePath());
-         for (File f : pwd.listFiles()) {
-            getLogger().info(f.getAbsolutePath());
-         }
-      }
+      // if (getConfig().getBoolean("SaveUploader.isEnabled")) {
+      //    File pwd = new File(".");
+      //    getLogger().info("current work folder");
+      //    getLogger().info(pwd.getAbsolutePath());
+      //    for (File f : pwd.listFiles()) {
+      //       getLogger().info(f.getAbsolutePath());
+      //    }
+      // }
 
-      // startSaveUploader();
+      startSaveUploader();
    }
 
    @Override
@@ -66,7 +64,7 @@ public final class TimeMachine extends JavaPlugin implements Listener {
    private void startSaveUploader() {
       ConfigurationSection section = getConfig().getConfigurationSection("SaveUploader");
       if (this.saveUploaderTask == null) {
-         this.saveUploaderTask = new SaveUploader(section).runTaskTimer(this, 200,
+         this.saveUploaderTask = new SaveUploader(section).runTaskTimer(this, 0,
                section.getInt("interval-second") * 20);
       } else {
          this.saveUploaderTask.cancel();

@@ -37,7 +37,7 @@ public class SaveUploader extends BukkitRunnable {
     private String BUCKET_NAME;
     private String folderPath;
     private int interval;
-
+    private String PREFIX;
 
     public SaveUploader(ConfigurationSection section) {
         this.API_ID = section.getString("tencent-cos.secret-id");
@@ -46,7 +46,8 @@ public class SaveUploader extends BukkitRunnable {
         this.BUCKET_NAME = section.getString("tencent-cos.bucket");
         this.folderPath = section.getString("world-folder");
         this.interval = section.getInt("interval-second");
-
+        this.PREFIX = section.getString("backup-prefix");
+        System.out.println(this.BUCKET_NAME);
     }
 
     public int getInterval() {
@@ -66,7 +67,7 @@ public class SaveUploader extends BukkitRunnable {
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
-            
+
         }
 
     }
@@ -127,9 +128,9 @@ public class SaveUploader extends BukkitRunnable {
 
     private void uploadZipFile(String zipFilePath) {
 
-        COSManager cos = new COSManager(this.API_ID, this.API_KEY, this.REGION, this.BUCKET_NAME);
+        COSManager cos = new COSManager(this.API_ID, this.API_KEY, this.BUCKET_NAME, this.REGION, this.PREFIX);
         File localFile = new File(zipFilePath);
-        cos.Upload(localFile, "meta"); // 同步方法
+        cos.Upload(localFile); // 同步方法
         localFile.delete(); // 删除本地文件
 
     }
@@ -143,23 +144,30 @@ final class COSManager {
     private String API_KEY;
     private String BUCKET_NAME;
     private String REGION_NAME;
+    private String BACKUP_PREFIX;
     private TransferManager transferManager;
 
-    COSManager(String id, String key, String bucketName, String regionName) {
+    COSManager(String id, String key, String bucketName, String regionName, String prefix) {
         this.API_ID = id;
         this.API_KEY = key;
         this.BUCKET_NAME = bucketName;
         this.REGION_NAME = regionName;
+        this.BACKUP_PREFIX = prefix;
     }
 
-    public void Upload(File localFile, String prefix) {
+    public void Upload(File localFile) {
         // 使用高级接口必须先保证本进程存在一个 TransferManager 实例
         this.createTransferManager();
 
         // 存储桶的命名格式为 BucketName-APPID，此处填写的存储桶名称必须为此格式
         String bucketName = this.BUCKET_NAME;
         // 对象键(Key)是对象在存储桶中的唯一标识。
-        String key = prefix + localFile.getName();
+        String key;
+        if (this.BACKUP_PREFIX == "") {
+            key = localFile.getName();
+        } else {
+            key = this.BACKUP_PREFIX + "-" + localFile.getName();
+        }
 
         PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, localFile);
 
@@ -168,7 +176,8 @@ final class COSManager {
             // 可同步地调用 waitForUploadResult 方法等待上传完成，成功返回UploadResult, 失败抛出异常
             Upload upload = this.transferManager.upload(putObjectRequest);
             UploadResult uploadResult = upload.waitForUploadResult();
-            System.out.println(uploadResult.toString());
+            System.out.println("Upload Success!");
+            System.out.println(uploadResult.getETag());
         } catch (CosServiceException e) {
             e.printStackTrace();
         } catch (CosClientException e) {
