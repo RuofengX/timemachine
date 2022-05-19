@@ -47,7 +47,6 @@ public class SaveUploader extends BukkitRunnable {
         this.folderPath = section.getString("world-folder");
         this.interval = section.getInt("interval-second");
         this.PREFIX = section.getString("backup-prefix");
-        System.out.println(this.BUCKET_NAME);
     }
 
     public int getInterval() {
