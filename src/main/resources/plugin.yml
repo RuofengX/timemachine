@@ -1,3 +1,10 @@
 name: TimeMachine
 main: cn.ruofengx.TimeMachine.TimeMachine
-version: 0.0.1
+version: 0.0.3
+author: 黄金鞘翅的郡主
+commands:
+   timemachine:
+      description: 时间机器
+      usage: /timemachine autoupload <on|off>
+      # permission: <plugin name>.basic
+      # permission-message: You don't have <permission>

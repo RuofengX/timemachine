@@ -6,4 +6,4 @@ SaveUploader:
     region: "ap-nanjing"
     bucket: "meta-world-backup-1258860419"
   world-folder: "/mnt/meta/worlds"
-  interval-second: 1
+  interval-second: 3600
