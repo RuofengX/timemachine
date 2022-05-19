@@ -61,17 +61,17 @@ public class SaveUploader extends BukkitRunnable {
 
     private void SaveAndUpload() { // 全同步方法
         try {
-            zipFolder(this.folderPath);
-            uploadZipFile(this.folderPath);
+            String targetFilePath = zipFolder(this.folderPath);
+            uploadZipFile(targetFilePath);
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
-            // TODO: handle exception
+            
         }
 
     }
 
-    private void zipFolder(String folderPath) throws IOException {
+    private String zipFolder(String folderPath) throws IOException {
         // 将folderPath文件夹的所有内容打包压缩成为一个zip文件，保存在folderPath/../中
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
@@ -99,6 +99,7 @@ public class SaveUploader extends BukkitRunnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return outputFile.getAbsolutePath();
     }
 
     private void zip(ZipOutputStream zout, File target, String name) {
