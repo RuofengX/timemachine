@@ -4,7 +4,7 @@
 
     <groupId>cn.ruofengx</groupId>
     <artifactId>timemachine</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -32,7 +32,7 @@
                 </executions>
                 <configuration>
                   <descriptorRefs>
-                    <descriptorRef>jar-timewith-dependencies</descriptorRef>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
                   </descriptorRefs>
                 </configuration>
               </plugin>
