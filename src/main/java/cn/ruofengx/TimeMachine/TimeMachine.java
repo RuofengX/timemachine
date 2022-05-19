@@ -6,6 +6,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 
 // Learn here -> https://bukkit.fandom.com/wiki/Plugin_Tutorial_(Eclipse)
 
@@ -35,7 +37,7 @@ public final class TimeMachine extends JavaPlugin implements Listener {
    }
 
    @Override
-   public boolean onCommand(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command, String label,
+   public boolean onCommand(CommandSender sender, Command command, String label,
          String[] args) {
       if (command.getName().equalsIgnoreCase("timemachine")) {
          if (args.length == 0) {
@@ -47,8 +49,10 @@ public final class TimeMachine extends JavaPlugin implements Listener {
             } else {
                if (args[1].equalsIgnoreCase("on")) {
                   startSaveUploader();
+                  return true;
                } else if (args[1].equalsIgnoreCase("off")) {
                   stopSaveUploader();
+                  return true;
                } else {
                   sender.sendMessage("§c请输入参数：on/off");
                }
@@ -56,7 +60,7 @@ public final class TimeMachine extends JavaPlugin implements Listener {
          }
       }
 
-      return true;
+      return false;
    }
 
    private void startSaveUploader() {
