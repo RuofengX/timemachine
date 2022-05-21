@@ -74,6 +74,7 @@ public class SaveUploader extends BukkitRunnable {
     private String zipFolder(String folderPath) throws IOException {
         // 将folderPath文件夹的所有内容打包压缩成为一个zip文件，保存在folderPath/../中
 
+        // FIXME: 文件夹1G容量没有报错；但是20G大小的文件夹打包会导致主线程阻塞，游戏环境被看门狗关闭
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         String separator = File.separator;
         File outputFile = new File(folderPath + separator + ".." + separator + sdf.format(new Date()) + ".zip");
