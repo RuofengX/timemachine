@@ -1,6 +1,6 @@
 name: TimeMachine
 main: cn.ruofengx.TimeMachine.TimeMachine
-version: 0.0.6
+version: ${project.version}
 author: 黄金鞘翅的郡主
 commands:
    timemachine:
