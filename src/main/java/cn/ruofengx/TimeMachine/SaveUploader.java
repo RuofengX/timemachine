@@ -1,16 +1,11 @@
 package cn.ruofengx.TimeMachine;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
@@ -28,6 +23,10 @@ import com.qcloud.cos.transfer.Upload;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.model.enums.CompressionMethod;
 
 // 定时将游戏存档上传至COS存储
 public class SaveUploader extends BukkitRunnable {
@@ -76,54 +75,42 @@ public class SaveUploader extends BukkitRunnable {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         String separator = File.separator;
-        File outputFile = new File(folderPath + separator + ".." + separator + sdf.format(new Date()) + ".zip");
+        String outputFilePath = folderPath + separator + ".." + separator + sdf.format(new Date()) + ".zip";
 
-        if (!outputFile.exists()) {
-            try {
-                outputFile.createNewFile();
-            } catch (IOException e) {
-                System.out.println("Error when creating zip file");
-                System.out.println(e.getMessage());
-            }
+        ZipParameters zipParameters = new ZipParameters();
+        zipParameters.setCompressionMethod(CompressionMethod.STORE);
 
-        }
-        ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(outputFile));
+        ZipFile zipFile = new ZipFile(outputFilePath);
+        zipFile.addFolder(new File(folderPath), zipParameters);
+        zipFile.close();
 
-        File inputFolder = new File(folderPath);
+        return outputFilePath;
 
-        zip(zipOutputStream, inputFolder, outputFile.getName());
-
-        try {
-            zipOutputStream.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return outputFile.getAbsolutePath();
     }
 
-    private void zip(ZipOutputStream zout, File target, String name) {
-        // 递归压缩target文件(文件夹)到zout输出流中
-        try {
-            if (target.isDirectory()) {
-                for (File file : target.listFiles()) {
-                    zip(zout, file, name + "/" + file.getName());
-                }
-            } else {
-                zout.putNextEntry(new ZipEntry(name));
-                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(target));
-                int len;
-                byte[] buffer = new byte[1024];
-                while ((len = bis.read(buffer)) != -1) {
-                    zout.write(buffer, 0, len);
-                }
-                bis.close();
-                zout.closeEntry();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    // private void zip(ZipOutputStream zout, File target, String name) {
+    // // 递归压缩target文件(文件夹)到zout输出流中
+    // try {
+    // if (target.isDirectory()) {
+    // for (File file : target.listFiles()) {
+    // zip(zout, file, name + "/" + file.getName());
+    // }
+    // } else {
+    // zout.putNextEntry(new ZipEntry(name));
+    // BufferedInputStream bis = new BufferedInputStream(new
+    // FileInputStream(target));
+    // int len;
+    // byte[] buffer = new byte[1024];
+    // while ((len = bis.read(buffer)) != -1) {
+    // zout.write(buffer, 0, len);
+    // }
+    // bis.close();
+    // zout.closeEntry();
+    // }
+    // } catch (IOException e) {
+    // e.printStackTrace();
+    // }
+    // }
 
     private void uploadZipFile(String zipFilePath) {
 
