@@ -118,7 +118,7 @@ public final class TimeMachine extends JavaPlugin implements Listener {
       data.set("last-upload-timestamp-millis", System.currentTimeMillis());
 
       // 规划任务
-      this.saveUploaderTask = new SaveUploader(section).runTaskTimer(this, delayTicks, periodTicks);
+      this.saveUploaderTask = new SaveUploader(section).runTaskTimerAsynchronously(this, delayTicks, periodTicks);
 
    }
 
