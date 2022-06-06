@@ -88,30 +88,6 @@ public class SaveUploader extends BukkitRunnable {
 
     }
 
-    // private void zip(ZipOutputStream zout, File target, String name) {
-    // // 递归压缩target文件(文件夹)到zout输出流中
-    // try {
-    // if (target.isDirectory()) {
-    // for (File file : target.listFiles()) {
-    // zip(zout, file, name + "/" + file.getName());
-    // }
-    // } else {
-    // zout.putNextEntry(new ZipEntry(name));
-    // BufferedInputStream bis = new BufferedInputStream(new
-    // FileInputStream(target));
-    // int len;
-    // byte[] buffer = new byte[1024];
-    // while ((len = bis.read(buffer)) != -1) {
-    // zout.write(buffer, 0, len);
-    // }
-    // bis.close();
-    // zout.closeEntry();
-    // }
-    // } catch (IOException e) {
-    // e.printStackTrace();
-    // }
-    // }
-
     private void uploadZipFile(String zipFilePath) {
 
         COSManager cos = new COSManager(this.API_ID, this.API_KEY, this.BUCKET_NAME, this.REGION, this.PREFIX);
