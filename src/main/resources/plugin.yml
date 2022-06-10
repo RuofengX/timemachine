@@ -1,10 +1,17 @@
 name: TimeMachine
 main: cn.ruofengx.TimeMachine.TimeMachine
 version: ${project.version}
+api-version: 1.18
 author: 黄金鞘翅的郡主
 commands:
    timemachine:
       description: 时间机器
-      usage: /timemachine autoupload <on|off>
+      usage: |-
+         - timemachine autoupload <on|off>
+         - timemachine warp <Dimension>
+         - timemachine inv <up|down>
+         
       # permission: <plugin name>.basic
       # permission-message: You don't have <permission>
+      # aliases: [tme]
+

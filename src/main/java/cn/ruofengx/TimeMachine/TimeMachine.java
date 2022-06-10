@@ -4,39 +4,47 @@ import java.io.File;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+
+import cn.ruofengx.TimeMachine.CosmicNexus.Nexus;
 
 // Learn here -> https://bukkit.fandom.com/wiki/Plugin_Tutorial_(Eclipse)
 
 public final class TimeMachine extends JavaPlugin implements Listener {
 
    private BukkitTask saveUploaderTask;
+   private Nexus nexus;
 
    @Override
    public void onEnable() {
       this.saveDefaultConfig();
       this.saveResource("data.yml", false);
-      // if (getConfig().getBoolean("SaveUploader.isEnabled")) {
-      // File pwd = new File(".");
-      // getLogger().info("current work folder");
-      // getLogger().info(pwd.getAbsolutePath());
-      // for (File f : pwd.listFiles()) {
-      // getLogger().info(f.getAbsolutePath());
-      // }
-      // }
 
-      // startSaveUploader();
+      try {
+         this.nexus = new Nexus(this, this.getConfig().getConfigurationSection("CosmicNexus"));
+      } catch (RuntimeException e) {
+         this.getLogger().severe(e.getMessage());
+         this.getLogger().severe("CosmicNexus配置出错，相关功能不可用，请检查上下文错误信息");
+      }
+
+      this.getLogger().info("[TimeMachine] 初始化完成");
    }
 
    @Override
    public void onDisable() {
       // Plugin shutdown logic
       stopSaveUploader();
+
+      if (this.nexus != null) {
+         this.nexus.onDisableCallback();
+      }
    }
 
    @Override
@@ -45,25 +53,71 @@ public final class TimeMachine extends JavaPlugin implements Listener {
       if (command.getName().equalsIgnoreCase("timemachine")) {
          if (args.length == 0) {
             return false;
-         } else if (args[0].equalsIgnoreCase("autoupload")) {
-            if (args.length == 1) {
-               sender.sendMessage("§c请输入参数：on/off");
-               return true;
-            } else {
-               if (args[1].equalsIgnoreCase("on")) {
-                  startSaveUploader();
+         }
+         switch (args[0]) {
+            case "autoupload":
+               if (!(sender instanceof ConsoleCommandSender)) {
+                  sender.sendMessage("该命令只能从控制台启用");
                   return true;
-               } else if (args[1].equalsIgnoreCase("off")) {
-                  stopSaveUploader();
+               }
+               if (args.length == 1) {
+                  sender.sendMessage("§c请输入参数：on/off");
                   return true;
                } else {
-                  sender.sendMessage("§c请输入参数：on/off");
+                  if (args[1].equalsIgnoreCase("on")) {
+                     startSaveUploader();
+                     return true;
+                  } else if (args[1].equalsIgnoreCase("off")) {
+                     stopSaveUploader();
+                     return true;
+                  } else {
+                     sender.sendMessage("§c请输入参数：on/off");
+                  }
                }
-            }
+               break;
+            case "warp":
+               if (sender instanceof Player) {
+                  if (args.length == 1) {
+                     sender.sendMessage("§c请输入参数：<名字>");
+                     return true;
+                  }
+                  nexus.warp((Player) sender, args[1]);
+               } else {
+                  sender.sendMessage("§c请在游戏中使用");
+               }
+               break;
+
+            case "inv":
+               if (sender instanceof Player) {
+                  if (args.length == 1) {
+                     sender.sendMessage("§c请输入参数：<名字>");
+                     return true;
+                  }
+
+                  switch (args[1]) {
+
+                     case "up":
+                        nexus.uploadInv((Player) sender);
+                        return true;
+
+                     case "down":
+                        nexus.downloadInv((Player) sender);
+                        return true;
+
+                     default:
+                        sender.sendMessage("§c请输入参数：<名字>");
+                        break;
+                  }
+
+               } else {
+                  sender.sendMessage("§c请在游戏中使用");
+               }
+            default:
+               break;
          }
       }
-
       return false;
+
    }
 
    private void startSaveUploader() {
@@ -75,7 +129,6 @@ public final class TimeMachine extends JavaPlugin implements Listener {
 
       }
 
-      
       long delayTicks;
       long periodTicks;
 
@@ -87,7 +140,7 @@ public final class TimeMachine extends JavaPlugin implements Listener {
 
       // 在正确的时间点上传
 
-      //获取上次运行时间
+      // 获取上次运行时间
       FileConfiguration data = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "data.yml"));
 
       long lastUploadTimestamp = data.getLong("last-upload-timestamp-millis", 0);
@@ -102,7 +155,7 @@ public final class TimeMachine extends JavaPlugin implements Listener {
          delayTicks = Math.abs(sinceLastUpdate) * 20 + periodTicks;
 
       } else {
-         
+
          if (sinceLastUpdate <= section.getInt("interval-second")) {
             // 小于间隔时间，需要推迟
             this.getLogger().warning("§c上次上传时间距离现在小于间隔时间，任务规划推迟");

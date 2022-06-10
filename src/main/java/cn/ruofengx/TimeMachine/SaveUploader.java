@@ -7,6 +7,9 @@ import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.scheduler.BukkitRunnable;
+
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
 import com.qcloud.cos.auth.BasicCOSCredentials;
@@ -20,9 +23,6 @@ import com.qcloud.cos.region.Region;
 import com.qcloud.cos.transfer.TransferManager;
 import com.qcloud.cos.transfer.TransferManagerConfiguration;
 import com.qcloud.cos.transfer.Upload;
-
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
@@ -73,7 +73,6 @@ public class SaveUploader extends BukkitRunnable {
     private String zipFolder(String folderPath) throws IOException {
         // 将folderPath文件夹的所有内容打包压缩成为一个zip文件，保存在folderPath/../中
 
-        // FIXME: 文件夹1G容量没有报错；但是20G大小的文件夹打包会导致主线程阻塞，游戏环境被看门狗关闭
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         String separator = File.separator;
         String outputFilePath = folderPath + separator + ".." + separator + sdf.format(new Date()) + ".zip";
@@ -86,18 +85,24 @@ public class SaveUploader extends BukkitRunnable {
         zipFile.close();
 
         return outputFilePath;
-
     }
 
     private void uploadZipFile(String zipFilePath) {
 
+        File file = new File(zipFilePath);
+        if (!file.exists()) {
+            System.out.println("File not found");
+            return;
+        }
+        try {
         COSManager cos = new COSManager(this.API_ID, this.API_KEY, this.BUCKET_NAME, this.REGION, this.PREFIX);
-        File localFile = new File(zipFilePath);
-        cos.Upload(localFile); // 同步方法
-        localFile.delete(); // 删除本地文件
-
+        cos.Upload(file); // 同步方法
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            file.delete(); // 删除本地文件
+        }        
     }
-
 }
 
 final class COSManager {
