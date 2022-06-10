@@ -7,7 +7,7 @@ SaveUploader:
     bucket: "meta-world-backup-1258860419"
   world-folder: "./world"
   backup-prefix: ""
-  interval-second: 3600
+  interval-second: 604800
 
 CosmicNexus:
   mysql:
