@@ -1,0 +1,8 @@
+# TODO-list
+
+## FIXME:
+  - [ ] BungeeCordMsgManager始终报错，无法实现TP
+
+## TODO:
+  - [ ] 1.16和java11的版本兼容
+
