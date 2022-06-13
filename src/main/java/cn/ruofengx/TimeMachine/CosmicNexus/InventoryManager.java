@@ -50,7 +50,7 @@ public class InventoryManager {
 
         try {
             // 执行 SQL 查询
-            java.sql.Statement stmt = conn.createStatement();
+            java.sql.Statement stmt = this.conn.createStatement();
             stmt.executeUpdate(sql);
 
         } catch (SQLException e) {
@@ -62,7 +62,7 @@ public class InventoryManager {
 
     }
 
-    @Deprecated  // 物品复制bug，上层调用已关闭，不会修复
+    @Deprecated // 物品复制bug，上层调用已关闭，不会修复
     public void whatsMyInv(Player p) {
         // 测试用例
 
@@ -105,13 +105,12 @@ public class InventoryManager {
                 try {
                     byte[] nbt = item.serializeAsBytes();
                     String sql = "INSERT INTO InventoryManager (player, item, world) VALUES (?, ?, ?)";
-                    PreparedStatement ps = conn.prepareStatement(sql);
+                    PreparedStatement ps = this.conn.prepareStatement(sql);
                     ps.setString(1, p.getName());
                     ps.setBytes(2, nbt);
                     ps.setString(3, p.getWorld().getName());
                     int affectedRows = ps.executeUpdate();
 
-                    
                     if (affectedRows > 0) {
                         successCount++;
                         // 清空这个物品
@@ -122,6 +121,8 @@ public class InventoryManager {
 
                 } catch (Exception e) {
                     errorCount++;
+                } finally {
+                    this.conn = null;
                 }
             }
         }
@@ -130,17 +131,17 @@ public class InventoryManager {
 
     public void downloadInventory(Player p) {
         // 下载玩家的背包到玩家的背包
-        
+
         int successCount = 0;
         int errorCount = 0;
 
         PlayerInventory inv = p.getInventory();
         String sql = "SELECT * FROM InventoryManager WHERE player = ?";
         try {
-            PreparedStatement ps = conn.prepareStatement(sql);
+            PreparedStatement ps = this.conn.prepareStatement(sql);
             ps.setString(1, p.getName());
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) {  // ResultSet的一开始的指针是在第一行之前，需要先next()才能获取到第一行；此外，next()返回false表示没有下一行了
+            while (rs.next()) { // ResultSet的一开始的指针是在第一行之前，需要先next()才能获取到第一行；此外，next()返回false表示没有下一行了
                 int id = rs.getInt("id");
                 byte[] nbt = rs.getBytes("item");
                 ItemStack item = ItemStack.deserializeBytes(nbt);
@@ -153,19 +154,22 @@ public class InventoryManager {
                 }
 
                 // 从数据库清空这个物品
-                PreparedStatement ps2 = conn.prepareStatement("DELETE FROM InventoryManager WHERE id = ?");
+                PreparedStatement ps2 = this.conn.prepareStatement("DELETE FROM InventoryManager WHERE id = ?");
                 ps2.setInt(1, id);
                 ps2.executeUpdate();
-                successCount ++;
+                successCount++;
             }
         } catch (SQLException e) {
             p.sendMessage("数据库操作时出错");
             e.printStackTrace();
-            errorCount ++;
+            errorCount++;
         } catch (Exception e) {
             p.sendMessage("未知错误");
             e.printStackTrace();
-            errorCount ++;
+            errorCount++;
+        } finally {
+
+            this.conn = null;
         }
         p.sendMessage(successCount + "个物品下载完成 | " + errorCount + "个物品下载失败");
     }
