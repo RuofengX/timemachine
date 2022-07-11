@@ -52,12 +52,24 @@ public class InventoryManager {
             // 执行 SQL 查询
             java.sql.Statement stmt = this.conn.createStatement();
             stmt.executeUpdate(sql);
+            stmt.close(); // 释放资源
 
         } catch (SQLException e) {
             e.printStackTrace();
+            this.plugin.getServer().getLogger().warning(e.getMessage());
             throw new RuntimeException("[CosmicNexus] MySQL连接出错，请检查配置文件和数据库状态");
         } catch (Exception e) {
             this.plugin.getServer().getLogger().warning("[CosmicNexus] MySQL初始化失败，相关功能不可用");
+            { // 错误时释放资源
+                try {
+                    if (this.conn != null) {
+                        this.conn.close();
+                    }
+                } catch (SQLException e2) {
+                    this.plugin.getServer().getLogger().warning("关闭数据库连接时出错");
+                    this.plugin.getServer().getLogger().warning(e2.getMessage());
+                }
+            }
         }
 
     }
@@ -110,6 +122,7 @@ public class InventoryManager {
                     ps.setBytes(2, nbt);
                     ps.setString(3, p.getWorld().getName());
                     int affectedRows = ps.executeUpdate();
+                    ps.close(); // 释放预处理
 
                     if (affectedRows > 0) {
                         successCount++;
@@ -122,7 +135,15 @@ public class InventoryManager {
                 } catch (Exception e) {
                     errorCount++;
                 } finally {
-                    this.conn = null;
+                    try {
+                        if (this.conn != null) {
+                            this.conn.close();
+                        }
+
+                    } catch (SQLException e) {
+                        p.sendMessage("数据库连接关闭中发生未知错误");
+                        p.sendMessage(e.getMessage());
+                    }
                 }
             }
         }
@@ -157,10 +178,12 @@ public class InventoryManager {
                 PreparedStatement ps2 = this.conn.prepareStatement("DELETE FROM InventoryManager WHERE id = ?");
                 ps2.setInt(1, id);
                 ps2.executeUpdate();
+                ps2.close(); // 关闭预处理
                 successCount++;
             }
         } catch (SQLException e) {
             p.sendMessage("数据库操作时出错");
+            p.sendMessage(e.getMessage());
             e.printStackTrace();
             errorCount++;
         } catch (Exception e) {
@@ -168,8 +191,12 @@ public class InventoryManager {
             e.printStackTrace();
             errorCount++;
         } finally {
-
-            this.conn = null;
+            try {
+                this.conn.close();
+            } catch (SQLException e) {
+                p.sendMessage("数据库连接关闭时发生未知错误");
+                p.sendMessage(e.getMessage());
+            }
         }
         p.sendMessage(successCount + "个物品下载完成 | " + errorCount + "个物品下载失败");
     }
