@@ -4,12 +4,7 @@
 
   <groupId>cn.ruofengx</groupId>
   <artifactId>timemachine</artifactId>
-  <version>0.2.1</version>
-
-  <properties>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
-  </properties>
+  <version>0.2.2</version>
 
   <repositories>
     <repository>
@@ -39,9 +34,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>3.8.0</version>
         <configuration>
-          <release>17</release>
+          <release>11</release>
         </configuration>
       </plugin>
     </plugins>
@@ -50,10 +45,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.papermc.paper</groupId>
+      <groupId>com.destroystokyo.paper</groupId>
       <artifactId>paper-api</artifactId>
-      <version>1.18.2-R0.1-SNAPSHOT</version>
-      <scope>provided</scope>
+      <version>1.16.5-R0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
