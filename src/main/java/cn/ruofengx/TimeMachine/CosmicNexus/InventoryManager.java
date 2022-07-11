@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.apache.commons.lang.enums.EnumUtils;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -153,11 +154,16 @@ public class InventoryManager {
                 byte[] nbt = rs.getBytes("item");
                 ItemStack item = null;
                 try {
+                    // TODO: 使用Material判断版本是否支持
+                    // 使用这个示例读取nbt数据https://github.com/BitBuf/nbt/blob/main/src/test/java/dev/dewy/nbt/test/NbtTest.java
+                    // https://jd.papermc.io/paper/1.16/org/bukkit/Material.html
+                    // 使用EnumUtils.isValidEnumIgnoreCase(String)判断是否被当前版本支持
                     item = ItemStack.deserializeBytes(nbt);
 
                 } catch (IllegalArgumentException e) {
-                    p.sendMessage("发现当前服务器版本不兼容物品，跳过下载");
+                    p.sendMessage("具象化物品失败，未知错误");
                     errorCount++;
+                    e.printStackTrace();
                     continue;
                 }
                 Map<Integer, ItemStack> restItems = inv.addItem(item); // 剩余的物品就会放在restItems中
