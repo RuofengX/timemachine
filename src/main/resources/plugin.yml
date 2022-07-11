@@ -16,8 +16,11 @@ commands:
       # aliases: [tme]
 permissions:
    timemachine.*:
-      description: Gives access to all doorman commands
+      description: 全部权限
       children:
+         timemachine.autoupload: false
+         timemachine.inv: true
+         timemachine.warp: true
    timemachine.autoupload:
       description: 存档上传
       default: op
@@ -25,4 +28,5 @@ permissions:
       description: 物品上传与下载
       default: op
    timemachine.warp:
-      
+      description: 跨越位面
+      default: op

@@ -56,7 +56,8 @@ public final class TimeMachine extends JavaPlugin implements Listener {
          }
 
          // 权限检查
-         if (sender.hasPermission(args[0])){
+         String permissionString = "timemachine." + args[0];
+         if (!sender.hasPermission(permissionString)) {
             sender.sendMessage("当前不能这么做");
             return true;
          }

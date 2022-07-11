@@ -110,7 +110,7 @@ public class InventoryManager {
                     ps.setString(1, p.getName());
                     ps.setBytes(2, nbt);
                     ps.setString(3, p.getWorld().getName());
-                    int affectedRows = ps.executeUpdate();
+                    int affectedRows = ps.executeUpdate(); // TODO:可以异步操作
                     ps.close(); // 释放预处理
 
                     if (affectedRows > 0) {
@@ -151,10 +151,16 @@ public class InventoryManager {
             while (rs.next()) { // ResultSet的一开始的指针是在第一行之前，需要先next()才能获取到第一行；此外，next()返回false表示没有下一行了
                 int id = rs.getInt("id");
                 byte[] nbt = rs.getBytes("item");
-                ItemStack item = ItemStack.deserializeBytes(nbt);
+                ItemStack item = null;
+                try {
+                    item = ItemStack.deserializeBytes(nbt);
 
-                // 超出的部分扔到玩家的脚底下的坐标
-                Map<Integer, ItemStack> restItems = inv.addItem(item);
+                } catch (IllegalArgumentException e) {
+                    p.sendMessage("发现当前服务器版本不兼容物品，跳过下载");
+                    errorCount++;
+                    continue;
+                }
+                Map<Integer, ItemStack> restItems = inv.addItem(item); // 剩余的物品就会放在restItems中
                 Location loc = p.getLocation();
                 for (ItemStack itemStack : restItems.values()) {
                     p.getWorld().dropItem(loc, itemStack);
@@ -169,12 +175,10 @@ public class InventoryManager {
             }
 
         } catch (SQLException e) {
-            p.sendMessage("数据库操作时出错");
-            p.sendMessage(e.getMessage());
-            e.printStackTrace();
-            errorCount++;
+            p.sendMessage("数据库操作时出现异常");
+            this.plugin.getLogger().warning(e.getMessage());
         } catch (Exception e) {
-            p.sendMessage("未知错误");
+            p.sendMessage("发生错误,中止操作");
             e.printStackTrace();
             errorCount++;
         } finally {

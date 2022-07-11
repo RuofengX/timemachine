@@ -42,22 +42,22 @@ public class Nexus {
         });
     }
 
-    // @Deprecated  // 物品复制bug，上层调用已关闭，不会修复
+    // @Deprecated // 物品复制bug，上层调用已关闭，不会修复
     // public void whatsMyInv(Player p){
-    //     this.repository.whatsMyInv(p);
+    // this.repository.whatsMyInv(p);
     // }
 
-    public void uploadInv(Player p){
+    public void uploadInv(Player p) {
         this.repository.uploadInventory(p);
     }
 
-    public void downloadInv(Player p){
+    public void downloadInv(Player p) {
         this.repository.downloadInventory(p);
     }
 
     public void onDisableCallback() {
         // 提供给上层插件在disable时调用
-        this.gateway.unregister();  
+        this.gateway.unregister();
     }
 
 }
