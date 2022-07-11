@@ -10,6 +10,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -54,6 +55,13 @@ public final class TimeMachine extends JavaPlugin implements Listener {
          if (args.length == 0) {
             return false;
          }
+
+         // 权限检查
+         if (sender.hasPermission(args[0])){
+            sender.sendMessage("当前不能这么做");
+            return true;
+         }
+
          switch (args[0]) {
             case "autoupload":
                if (!(sender instanceof ConsoleCommandSender)) {

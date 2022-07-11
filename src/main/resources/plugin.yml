@@ -10,8 +10,23 @@ commands:
          - timemachine autoupload <on|off>
          - timemachine warp <Dimension>
          - timemachine inv <up|down>
-         
+
       # permission: <plugin name>.basic
       # permission-message: You don't have <permission>
       # aliases: [tme]
-
+permissions:
+   timemachine.*:
+      description: 除了存档上传以外的全部权限
+      children:
+         timemachine.autoupload: false
+         timemachine.inv: true
+         timemachine.warp: true
+   timemachine.autoupload:
+      description: 存档上传
+      default: op
+   timemachine.inv:
+      description: 将物品传送
+      default: op
+   timemachine.warp:
+      description: 在位面中传送
+      default: op
