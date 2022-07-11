@@ -42,10 +42,10 @@ public class Nexus {
         });
     }
 
-    @Deprecated  // 物品复制bug，上层调用已关闭，不会修复
-    public void whatsMyInv(Player p){
-        this.repository.whatsMyInv(p);
-    }
+    // @Deprecated  // 物品复制bug，上层调用已关闭，不会修复
+    // public void whatsMyInv(Player p){
+    //     this.repository.whatsMyInv(p);
+    // }
 
     public void uploadInv(Player p){
         this.repository.uploadInventory(p);

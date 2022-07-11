@@ -15,17 +15,15 @@ class BungeeCordMsgManager implements PluginMessageListener {
      * 使用BungeeCord插件通信
      * 
      * 初始化的同时必须使用register方法
-     * 析构的同时必须使用unnregister方法
+     * 析构的同时必须使用unregister方法
      * 
      * 用于玩家跨服TP和获取服务器在线状态的API
      * 
      */
-    
 
     private String serverName;
     private String[] serverList;
     private JavaPlugin plugin;
-    
 
     public String getServerName() {
         return serverName;
@@ -40,7 +38,7 @@ class BungeeCordMsgManager implements PluginMessageListener {
     }
 
     public void setServerList(String[] serverList) {
-        for (String onlineServerName: serverList)  {
+        for (String onlineServerName : serverList) {
             this.plugin.getLogger().info(onlineServerName);
         }
         this.serverList = serverList;
@@ -62,7 +60,8 @@ class BungeeCordMsgManager implements PluginMessageListener {
     }
 
     public void unregister() {
-        // 在disable时必须调用make sure to unregister the registered channels in case of a reload
+        // 在disable时必须调用make sure to unregister the registered channels in case of a
+        // reload
         if (this.plugin != null) {
             this.plugin.getLogger().warning("[CosmicGate] Unregister CosmicGate...");
             this.plugin.getServer().getMessenger().unregisterOutgoingPluginChannel(plugin);
