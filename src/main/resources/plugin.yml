@@ -1,7 +1,7 @@
 name: TimeMachine
 main: cn.ruofengx.TimeMachine.TimeMachine
 version: ${project.version}
-api-version: 1.18
+api-version: 1.16
 author: 黄金鞘翅的郡主
 commands:
    timemachine:
@@ -14,19 +14,3 @@ commands:
       # permission: <plugin name>.basic
       # permission-message: You don't have <permission>
       # aliases: [tme]
-permissions:
-   timemachine.*:
-      description: 除了存档上传以外的全部权限
-      children:
-         timemachine.autoupload: false
-         timemachine.inv: true
-         timemachine.warp: true
-   timemachine.autoupload:
-      description: 存档上传
-      default: op
-   timemachine.inv:
-      description: 将物品传送
-      default: op
-   timemachine.warp:
-      description: 在位面中传送
-      default: op
