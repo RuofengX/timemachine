@@ -14,3 +14,15 @@ commands:
       # permission: <plugin name>.basic
       # permission-message: You don't have <permission>
       # aliases: [tme]
+permissions:
+   timemachine.*:
+      description: Gives access to all doorman commands
+      children:
+   timemachine.autoupload:
+      description: 存档上传
+      default: op
+   timemachine.inv:
+      description: 物品上传与下载
+      default: op
+   timemachine.warp:
+      
