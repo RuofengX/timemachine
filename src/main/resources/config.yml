@@ -1,5 +1,5 @@
 SaveUploader:
-  isEnabled: true
+  isEnabled: false
   tencent-cos:
     secret-id: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     secret-key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -11,7 +11,7 @@ SaveUploader:
 
 CosmicNexus:
   mysql:
-  # 至少需要mysql8.0
-    URL: "jdbc:mysql://localhost:3306/timemachine?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+    # 至少需要mysql8.0
+    URL: "jdbc:mysql://localhost:3306/timemachine?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=10000&socketTimeout=60000"
     user: ""
     password: ""
