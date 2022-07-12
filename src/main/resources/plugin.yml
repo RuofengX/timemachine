@@ -1,6 +1,6 @@
 name: TimeMachine
 main: cn.ruofengx.TimeMachine.TimeMachine
-version: { $project.version }
+version: alpha
 api-version: 1.16
 author: 黄金鞘翅的郡主
 commands:

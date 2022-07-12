@@ -1,12 +1,16 @@
 // 多世界物品处理中心
 package cn.ruofengx.TimeMachine.CosmicNexus;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -160,26 +164,41 @@ public class InventoryManager {
                 byte[] nbt = rs.getBytes("item");
                 ItemStack item = null;
                 try {
-                    if (this.getNBTVersion(nbt) > this.dataVersion) {
-                        p.sendMessage("检测到版本降级，可能导致具象化物品失败（版本不兼容）");
-                        // https://jd.papermc.io/paper/1.16/org/bukkit/Material.html
-                        // TODO: 使用EnumUtils.isValidEnumIgnoreCase(String)进一步判断是否被当前版本支持
+                    int nbtVersion = this.getNBTVersion(nbt);
+                    if (nbtVersion <= 0) {
+                        throw new IOException("获取物品版本信息错误");
                     }
-                    item = ItemStack.deserializeBytes(nbt);
+                    if (nbtVersion > this.dataVersion) {
+                        p.sendMessage("检测到版本降级，可能导致具象化物品失败（版本不兼容）");
+
+                        if (Material.matchMaterial(this.getNBTId(nbt)) == null) {
+                            // 当前版本找不到这个物品
+                            throw new IllegalArgumentException("版本不兼容");
+                        } else {
+                            // 有这个物品，尝试强制下载
+                            nbt = this.changeNBTVersion(nbt, this.dataVersion);
+                        }
+                    }
+                    item = ItemStack.deserializeBytes(nbt); // 失败会抛出 IllegalArgumentException
 
                 } catch (IllegalArgumentException e) {
                     p.sendMessage("具象化物品失败（版本不兼容），跳过");
                     errorCount++;
-                    e.printStackTrace();
+                    // e.printStackTrace();
+                    continue;
+                } catch (IOException e) {
+                    p.sendMessage("具象化物品失败（获取物品版本信息错误），跳过");
+                    errorCount++;
+                    // e.printStackTrace();
                     continue;
                 }
-                Map<Integer, ItemStack> restItems = inv.addItem(item); // 剩余的物品就会放在restItems中
+                Map<Integer, ItemStack> restItems = inv.addItem(item); // 多余的物品就会放在restItems中
                 Location loc = p.getLocation();
                 for (ItemStack itemStack : restItems.values()) {
                     p.getWorld().dropItem(loc, itemStack);
                 }
 
-                // 从数据库清空这个物品
+                // 从数据库清空这一个物品，之前有异常则不会清除
                 PreparedStatement ps2 = conn.prepareStatement("DELETE FROM InventoryManager WHERE id = ?");
                 ps2.setInt(1, id);
                 ps2.executeUpdate();
@@ -191,9 +210,8 @@ public class InventoryManager {
             p.sendMessage("数据库操作时出现异常");
             this.plugin.getLogger().warning(e.getMessage());
         } catch (Exception e) {
-            p.sendMessage("发生错误,中止操作");
+            p.sendMessage("发生错误,中止全部操作");
             e.printStackTrace();
-            errorCount++;
         } finally {
             try {
                 if (rs != null) {
@@ -244,20 +262,108 @@ public class InventoryManager {
     }
 
     private int getDataVersion() {
+        // 尝试获取当前服务器DataVersion，如果获取过程中发生异常，则视作最低版本0，以求最大兼容
         return this.getNBTVersion(new ItemStack(Material.EGG).serializeAsBytes());
     }
 
-    private int getNBTVersion(byte[] nbt) {
+    private CompoundTag getNBTCompound(byte[] nbt) {
+        // https://github.com/BitBuf/nbt
+        // 从压缩过后的nbt字节串中读取CompoundTag格式的NBT信息
+        GZIPInputStream gStream = null;
+        ByteArrayOutputStream out = null;
+
         try {
-            CompoundTag tag = NBT_PARSER.fromByteArray(nbt);
-            int versionInfo = tag.getInt("DataVersion").getValue();
-            return versionInfo;
+            gStream = new GZIPInputStream(new ByteArrayInputStream(nbt));
+            out = new ByteArrayOutputStream();
+
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = gStream.read(buffer)) > 0) {
+                out.write(buffer, 0, len);
+            }
+
+            CompoundTag tag = NBT_PARSER.fromByteArray(out.toByteArray());
+            return tag;
 
         } catch (IOException e) {
-            return 0;
-        } catch (Exception e) {
-            return 0;
+            // e.printStackTrace();
+            return null;
+
+        } finally {
+            try {
+                if (gStream != null) {
+                    gStream.close();
+                }
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                this.plugin.getLogger().info("关闭流时发生错误");
+                this.plugin.getLogger().info(e.getMessage());
+            }
         }
 
     }
+
+    private int getNBTVersion(byte[] nbt) {
+        // 从压缩过后的nbt字节串中读取DataVersion信息，如果读取失败则返回0
+
+        CompoundTag tag = this.getNBTCompound(nbt);
+        int versionInfo = tag.getInt("DataVersion").getValue();
+        return versionInfo;
+
+    }
+
+    private String getNBTId(byte[] nbt) {
+        // 从压缩过后的nbt字节串中读取DataVersion信息，如果读取失败则返回0
+        CompoundTag tag = this.getNBTCompound(nbt);
+        String id = tag.getString("id").getValue();
+        return id;
+    }
+
+    private byte[] gzipByte(byte[] raw) {
+
+        GZIPOutputStream gOutputStream = null;
+        ByteArrayOutputStream out = null;
+
+        try {
+            out = new ByteArrayOutputStream(raw.length);
+            gOutputStream = new GZIPOutputStream(out);
+            gOutputStream.write(raw);
+
+            return out.toByteArray();
+
+        } catch (IOException e){
+            return null;
+        } finally {
+            try {
+                if (out!= null) {
+                    out.close();
+                }
+                if (gOutputStream != null) {
+                    gOutputStream.close();
+                }
+
+            } catch (IOException e) {
+                this.plugin.getLogger().info("关闭流时发生错误");
+                this.plugin.getLogger().info(e.getMessage());
+            }
+        }
+
+    }
+    private byte[] changeNBTVersion(byte[] nbt, int version) {
+        // 读取
+        CompoundTag tag = this.getNBTCompound(nbt);
+
+        // 修改
+        tag.putInt("DataVersion", version);
+
+        // 输出
+        try {
+            return this.gzipByte(NBT_PARSER.toByteArray(tag));
+        } catch (IOException e){
+            return null;
+        }
+    }
+
 }
