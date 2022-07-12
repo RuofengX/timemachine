@@ -120,6 +120,10 @@ public final class TimeMachine extends JavaPlugin implements Listener {
                } else {
                   sender.sendMessage("§c请在游戏中使用");
                }
+            case "debug":
+               sender.getServer().getLogger().warning("debug");
+               
+               break;
             default:
                break;
          }

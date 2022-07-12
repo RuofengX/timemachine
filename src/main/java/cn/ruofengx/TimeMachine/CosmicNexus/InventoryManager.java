@@ -1,19 +1,23 @@
 // 多世界物品处理中心
 package cn.ruofengx.TimeMachine.CosmicNexus;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.apache.commons.lang.enums.EnumUtils;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import dev.dewy.nbt.Nbt;
+import dev.dewy.nbt.tags.collection.CompoundTag;
 
 public class InventoryManager {
     // 玩家TP和物品TP的接口，物品TP还在制作中
@@ -23,6 +27,8 @@ public class InventoryManager {
     private String dbPassword;
     private String dbTable;
     static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
+    private static final Nbt NBT_PARSER = new Nbt();
+    private final int dataVersion = this.getDataVersion();
 
     public InventoryManager(JavaPlugin p, ConfigurationSection mysqlSection) throws RuntimeException {
         this.plugin = p; // MySQL 8.0 以上版本 - JDBC 驱动名及数据库 URL
@@ -117,7 +123,7 @@ public class InventoryManager {
                     if (affectedRows > 0) {
                         successCount++;
                         // 清空这个物品
-                        inv.setItem(i, null);
+                        inv.setItem(i, null); // 无法异步的API操作
                     } else {
                         errorCount++;
                     }
@@ -154,14 +160,15 @@ public class InventoryManager {
                 byte[] nbt = rs.getBytes("item");
                 ItemStack item = null;
                 try {
-                    // TODO: 使用Material判断版本是否支持
-                    // 使用这个示例读取nbt数据https://github.com/BitBuf/nbt/blob/main/src/test/java/dev/dewy/nbt/test/NbtTest.java
-                    // https://jd.papermc.io/paper/1.16/org/bukkit/Material.html
-                    // 使用EnumUtils.isValidEnumIgnoreCase(String)判断是否被当前版本支持
+                    if (this.getNBTVersion(nbt) > this.dataVersion) {
+                        p.sendMessage("检测到版本降级，可能导致具象化物品失败（版本不兼容）");
+                        // https://jd.papermc.io/paper/1.16/org/bukkit/Material.html
+                        // TODO: 使用EnumUtils.isValidEnumIgnoreCase(String)进一步判断是否被当前版本支持
+                    }
                     item = ItemStack.deserializeBytes(nbt);
 
                 } catch (IllegalArgumentException e) {
-                    p.sendMessage("具象化物品失败，未知错误");
+                    p.sendMessage("具象化物品失败（版本不兼容），跳过");
                     errorCount++;
                     e.printStackTrace();
                     continue;
@@ -232,6 +239,24 @@ public class InventoryManager {
         } catch (SQLException e) {
             this.plugin.getLogger().warning("关闭数据库连接失败");
             this.plugin.getLogger().warning(e.getMessage());
+        }
+
+    }
+
+    private int getDataVersion() {
+        return this.getNBTVersion(new ItemStack(Material.EGG).serializeAsBytes());
+    }
+
+    private int getNBTVersion(byte[] nbt) {
+        try {
+            CompoundTag tag = NBT_PARSER.fromByteArray(nbt);
+            int versionInfo = tag.getInt("DataVersion").getValue();
+            return versionInfo;
+
+        } catch (IOException e) {
+            return 0;
+        } catch (Exception e) {
+            return 0;
         }
 
     }
