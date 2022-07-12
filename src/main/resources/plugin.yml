@@ -1,6 +1,6 @@
 name: TimeMachine
 main: cn.ruofengx.TimeMachine.TimeMachine
-version: ${project.version}
+version: { $project.version }
 api-version: 1.16
 author: 黄金鞘翅的郡主
 commands:
@@ -10,6 +10,8 @@ commands:
          - timemachine autoupload <on|off>
          - timemachine warp <Dimension>
          - timemachine inv <up|down>
+         - timemachine debug
+      aliases: [tme]
 
       # permission: <plugin name>.basic
       # permission-message: You don't have <permission>
